@@ -1,113 +1,133 @@
 "use strict";
 // CRUD = Create (POST), Read (GET), Update (PUT), Delete (Delete)
 const root = document.querySelector("#root");
+const url = "http://localhost:8888/todos";
 
-const title = document.createElement("h1");
-const subTitle =  document.createElement("p");
-const form = document.createElement("form");
-const screenBlock = document.createElement("div");
-const screenInput = document.createElement("input");
-const screenAddBtn = document.createElement("button");
+const UI = {
+	title: document.createElement("h1"),
+	subTitle: document.createElement("p"),
+	form: document.createElement("form"),
+	screenBlock: document.createElement("div"),
+	screenInput: document.createElement("input"),
+	screenAddBtn: document.createElement("button"),
+	listsBlock: document.createElement("div"),
 
-const listsBlock = document.createElement("div");
+	elementOptions() {
+		this.title.textContent = "CRUD";
+		this.subTitle.textContent = "Asyn Application"
 
-title.textContent = "CRUD";
-subTitle.textContent = "Asyn Application"
+		this.form.id = "app-form";
+		this.screenBlock.id = "screenBlock";
+		this.screenInput.type = "text";
+		this.screenInput.placeholder = "Type here...";
+		this.screenAddBtn.textContent = "ADD";
+		this.screenAddBtn.id = "screenAddBtn";
+		this.listsBlock.id = "listBlock";
+	},
 
-form.id = "app-form";
-screenBlock.id = "screenBlock";
-screenInput.type = "text";
-screenInput.placeholder = "Write here...";
-screenAddBtn.textContent = "ADD";
-screenAddBtn.id = "screenAddBtn";
+	appendElements() {
+		root.append(this.title, this.subTitle, this.form, this.listsBlock);
+		this.form.append(this.screenBlock);
+		this.screenBlock.append(this.screenInput, this.screenAddBtn);
+	},
 
-listsBlock.id = "listsBlock";
-
-root.prepend(title, subTitle)
-root.append(form);
-
-form.prepend(screenBlock);
-form.append(listsBlock);
-screenBlock.append(screenInput, screenAddBtn);
-
-form.addEventListener("submit", function (e) {
-	e.preventDefault();
-	const val = screenInput.value.trim();
-
-	if (val !== "") {
-		fetch("http://localhost:8888/todos", {
-			method: "POST",
-			headers: {
-				"content-type": "application/json"
-			},
-			body: JSON.stringify({ title: val })
-		});
-	}
-
-	this.reset();
-});
-
-fetch("http://localhost:8888/todos")
-.then(data => data.json())
-.then(data => {
-	data.forEach(todo => {
-		listsBlock.innerHTML += `
-			<div class="listsBlock__item">
-				<div class="listsBlock__item__content">
-					<span>${todo.id}</span>
-					<input type="text" value="${todo.title}" readonly>
+	toHTML(id, value, state = false) {
+		this.listsBlock.innerHTML += `
+			<div class="listsBlockItem">
+				<div class="listsBlockItemContent">
+					<span>${id}</span>
+					<input type="text" value="${value}" ${state ? "" : "readonly"}>
 				</div>
 				<div class="buttons">
-					<button data-rm>Remove</button>
-					<button data-ed>Edit</button>
-					<button data-sv>Save</button>
+					<button class="removeBtn">Remove</button>
+					<button class="editBtn">Edit</button>
+					<button class="saveBtn">Save</button>
 				</div>
 			</div>
 		`;
-	});
-	return data;
-})
-.then(data => {
-	const removeBtns = document.querySelectorAll("[data-rm]");
-	const editBtns = document.querySelectorAll("[data-ed]");
-	const saveBtns = document.querySelectorAll("[data-sv]");
-	
-	editBtns.forEach((btn, index) => {
-		btn.addEventListener("click", function () {
-			const input = this.parentElement.previousElementSibling.lastElementChild;
+	},
 
+	start() {
+		this.elementOptions();
+		this.appendElements();
+	}
+};
+
+UI.start();
+
+const { form, screenInput } = UI;
+
+function POST () {
+	form.addEventListener("submit", async (e) => {
+		e.preventDefault();
+
+		if (screenInput.value.trim() !== "") {
+			await fetch (url, {
+				method: "POST",
+				headers: {
+					"content-type" : "application/json"
+				},
+				body: JSON.stringify({title: screenInput.value.trim(), isComplete: false})
+			});
+		}
+
+		e.target.reset();
+	});
+}
+
+POST();
+
+async function GET () {
+	return await fetch(url)
+	.then(data => data.json())
+	.then(data => data.forEach(obj => {
+		UI.toHTML(obj.id, obj.title, false);
+	}))
+	.then(() => {
+		PUT(
+			document.querySelectorAll(".editBtn"),
+			document.querySelectorAll(".saveBtn"),
+			document.querySelectorAll(".listsBlockItemContent")
+		);
+		DELETE(document.querySelectorAll(".removeBtn"));
+	})
+}
+
+GET();
+
+function PUT (editBtnArray, saveBtnArray, content) {
+	editBtnArray.forEach((editBtn, index) => {
+		editBtn.addEventListener("click", () => {
+			editBtn.style.display = "none";
+			saveBtnArray[index].style.display = "inline-block";
+			const fakeID = parseInt(content[index].children[0].textContent);
+			const input = content[index].children[1];
 			input.classList.add("edit");
 			input.removeAttribute("readonly");
 
-			saveBtns.forEach((saveBtn, saveBtnIndex) => {
-				if (index === saveBtnIndex) {
-					saveBtn.style.display = "inline-block";
-					btn.style.display = "none";
-				}
+
+			saveBtnArray[index].addEventListener("click", async () => {
+				await fetch(`${url}/${fakeID}`, {
+					method: "PUT",
+					headers: {
+						"content-type" : "application/json"
+					},
+					body: JSON.stringify({title: input.value.trim(), isComplete: false})
+				})
+			})
+		});
+	});
+}
+
+function DELETE (removeBtn) {
+	removeBtn.forEach(btn => {
+		btn.addEventListener("click", async () => {
+			const fakeID = btn.parentElement.previousElementSibling.firstElementChild.textContent;
+			btn.parentElement.parentElement.remove();
+
+			await fetch(`${url}/${parseInt(fakeID)}`, {
+				method: "DELETE"
 			});
 		})
 	});
-
-	function changeDB (btnArray, method) {
-		btnArray.forEach(rm => {
-			rm.addEventListener("click", (e) => {
-				data.forEach(todo => {
-					const fakeId = rm.parentElement.previousElementSibling.firstElementChild.textContent;
-					const forEddited = rm.parentElement.previousElementSibling.lastElementChild;
-					if (parseInt(fakeId) === todo.id) {
-						fetch(`http://localhost:8888/todos/${todo.id}`, {
-							method: method,
-							headers: {
-								"content-type" : "application/json"
-							},
-							body: method === "PUT" ? JSON.stringify({title: forEddited.value.trim()}) : ""
-						});
-					}
-				});
-			});
-		});
-	}
-
-	changeDB(removeBtns, "DELETE");
-	changeDB(saveBtns, "PUT");
-});
+}

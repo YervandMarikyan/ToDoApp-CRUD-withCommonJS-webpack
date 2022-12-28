@@ -2,18 +2,17 @@
   "todos": [
     {
       "title": "Learn JavaScript",
+      "isComplete": false,
       "id": 1
     },
     {
-      "title": "Learn TypeScript",
-      "id": 2
-    },
-    {
       "title": "learn Front End",
+      "isComplete": false,
       "id": 6
     },
     {
       "title": "Learn React and Vue",
+      "isComplete": false,
       "id": 7
     }
   ]
