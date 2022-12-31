@@ -12,8 +12,20 @@
     },
     {
       "title": "Learn Front End",
-      "isComplete": false,
+      "isComplete": true,
       "id": 3
+    }
+  ],
+  "history": [
+    {
+      "title": "Leran React",
+      "isComplete": true,
+      "id": 1
+    },
+    {
+      "title": "Learn CSS",
+      "isComplete": true,
+      "id": 2
     }
   ]
 }

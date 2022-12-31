@@ -5,12 +5,14 @@ module.exports = {
 	screenBlock: document.createElement("div"),
 	screenInput: document.createElement("input"),
 	screenAddBtn: document.createElement("button"),
-	listsBlock: document.createElement("div"),
-	
+	listsBlock: document.createElement("div"),	
 	filterWrapper: document.createElement("div"),
 	filterComplete: document.createElement("button"),
 	filterUnComplete: document.createElement("button"),
 	filterAll: document.createElement("button"),
+	deletedItemsBlock: document.createElement("div"),
+	showDeletedsBtn: document.createElement("button"),
+	deletedItemsBlockContent: document.createElement("div"),
 
 	elementOptions() {
 		this.title.textContent = "CRUD";
@@ -32,13 +34,19 @@ module.exports = {
 		this.filterComplete.textContent = "Completed";
 		this.filterUnComplete.textContent = "Uncompleted";
 		this.filterAll.textContent = "ALL";
+
+		this.deletedItemsBlock.id = "deletedBlock";
+		this.showDeletedsBtn.id = "showDeletedsBtn";
+		this.showDeletedsBtn.textContent = "Show deleteds";
+		this.deletedItemsBlockContent.id = "deletedItemsBlockContent";
 	},
 
 	appendElements() {
-		root.append(this.title, this.subTitle, this.form, this.listsBlock, this.filterWrapper);
+		root.append(this.title, this.subTitle, this.form, this.listsBlock, this.filterWrapper, this.deletedItemsBlock);
 		this.form.append(this.screenBlock);
 		this.screenBlock.append(this.screenInput, this.screenAddBtn);
-		this.filterWrapper.append(this.filterComplete, this.filterUnComplete, this.filterAll)
+		this.filterWrapper.append(this.filterComplete, this.filterUnComplete, this.filterAll);
+		this.deletedItemsBlock.append(this.showDeletedsBtn, this.deletedItemsBlockContent);
 	},
 
 	toHTML(id, value, state = false) {
@@ -54,6 +62,14 @@ module.exports = {
 					<button class="editBtn fa fa-pencil"></button>
 					<button class="saveBtn fa fa-save"></button>
 				</div>
+			</div>
+		`;
+	},
+
+	showDeleteds(id, value) {
+		this.deletedItemsBlockContent.innerHTML += `
+			<div>
+				<span>${id}</span> <span>${value}</span>
 			</div>
 		`;
 	},

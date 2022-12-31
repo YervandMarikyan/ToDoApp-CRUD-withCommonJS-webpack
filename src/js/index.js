@@ -7,11 +7,11 @@ const PATCH = require("./modules/patchMethod");
 const DELETE = require("./modules/deleteMethod");
 const COMPLETE = require("./modules/complete");
 const FILTER = require("./modules/filter");
+const ShowDeleteds = require("./modules/showDeleteds");
 
 const url = "http://localhost:8888/todos";
 
-const {form, screenInput} = UI;
-
+const {form, screenInput, showDeletedsBtn} = UI;
 UI.start();
 POST(form, screenInput, url);
 
@@ -36,7 +36,11 @@ async function engine () {
 		document.querySelectorAll("[data-filter]"),
 		url,
 		UI
-	)
+	);
+	ShowDeleteds(
+		showDeletedsBtn,
+		UI
+	);
 }
 
 engine();
