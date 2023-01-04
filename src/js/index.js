@@ -8,36 +8,26 @@ const DELETE = require("./modules/deleteMethod");
 const COMPLETE = require("./modules/complete");
 const FILTER = require("./modules/filter");
 const ShowDeleteds = require("./modules/showDeleteds");
-
-const url = "http://localhost:8888/todos";
-
-const {form, screenInput, showDeletedsBtn} = UI;
-UI.start();
-POST(form, screenInput, url);
+const STATE = require("./modules/state");
 
 async function engine () {
+	const url = "http://localhost:8888/todos";
+
+	const {form, screenInput, showDeletedsBtn} = UI;
+	UI.start();
+
+	await POST(form, screenInput, url);
 	await GET(UI, url);
-	PATCH(
-		document.querySelectorAll(".editBtn"),
-		document.querySelectorAll(".saveBtn"),
-		document.querySelectorAll(".listsBlockItemContent"),
-		url
-	);
-	DELETE(
-		document.querySelectorAll(".removeBtn"),
-		url
-	);
-	COMPLETE(
-			url,
-			document.querySelectorAll(".buttons input"),
-			document.querySelectorAll(".listsBlockItemContent")
-	);
-	FILTER(
+	await STATE(PATCH, DELETE, COMPLETE, url);
+	await FILTER(
 		document.querySelectorAll("[data-filter]"),
 		url,
-		UI
+		UI,
+		PATCH,
+		DELETE,
+		COMPLETE
 	);
-	ShowDeleteds(
+	await ShowDeleteds(
 		showDeletedsBtn,
 		UI
 	);

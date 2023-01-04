@@ -16,7 +16,7 @@
 /***/ ((__unused_webpack_module, __unused_webpack_exports, __webpack_require__) => {
 
 "use strict";
-eval("\r\n\r\nconst UI = __webpack_require__(/*! ./modules/ui */ \"./src/js/modules/ui.js\");\r\nconst POST = __webpack_require__(/*! ./modules/postMethod */ \"./src/js/modules/postMethod.js\");\r\nconst GET = __webpack_require__(/*! ./modules/getMethod */ \"./src/js/modules/getMethod.js\");\r\nconst PATCH = __webpack_require__(/*! ./modules/patchMethod */ \"./src/js/modules/patchMethod.js\");\r\nconst DELETE = __webpack_require__(/*! ./modules/deleteMethod */ \"./src/js/modules/deleteMethod.js\");\r\nconst COMPLETE = __webpack_require__(/*! ./modules/complete */ \"./src/js/modules/complete.js\");\r\nconst FILTER = __webpack_require__(/*! ./modules/filter */ \"./src/js/modules/filter.js\");\r\nconst ShowDeleteds = __webpack_require__(/*! ./modules/showDeleteds */ \"./src/js/modules/showDeleteds.js\");\r\n\r\nconst url = \"http://localhost:8888/todos\";\r\n\r\nconst {form, screenInput, showDeletedsBtn} = UI;\r\nUI.start();\r\nPOST(form, screenInput, url);\r\n\r\nasync function engine () {\r\n\tawait GET(UI, url);\r\n\tPATCH(\r\n\t\tdocument.querySelectorAll(\".editBtn\"),\r\n\t\tdocument.querySelectorAll(\".saveBtn\"),\r\n\t\tdocument.querySelectorAll(\".listsBlockItemContent\"),\r\n\t\turl\r\n\t);\r\n\tDELETE(\r\n\t\tdocument.querySelectorAll(\".removeBtn\"),\r\n\t\turl\r\n\t);\r\n\tCOMPLETE(\r\n\t\t\turl,\r\n\t\t\tdocument.querySelectorAll(\".buttons input\"),\r\n\t\t\tdocument.querySelectorAll(\".listsBlockItemContent\")\r\n\t);\r\n\tFILTER(\r\n\t\tdocument.querySelectorAll(\"[data-filter]\"),\r\n\t\turl,\r\n\t\tUI\r\n\t);\r\n\tShowDeleteds(\r\n\t\tshowDeletedsBtn,\r\n\t\tUI\r\n\t);\r\n}\r\n\r\nengine();\n\n//# sourceURL=webpack://crud/./src/js/index.js?");
+eval("\r\n\r\nconst UI = __webpack_require__(/*! ./modules/ui */ \"./src/js/modules/ui.js\");\r\nconst POST = __webpack_require__(/*! ./modules/postMethod */ \"./src/js/modules/postMethod.js\");\r\nconst GET = __webpack_require__(/*! ./modules/getMethod */ \"./src/js/modules/getMethod.js\");\r\nconst PATCH = __webpack_require__(/*! ./modules/patchMethod */ \"./src/js/modules/patchMethod.js\");\r\nconst DELETE = __webpack_require__(/*! ./modules/deleteMethod */ \"./src/js/modules/deleteMethod.js\");\r\nconst COMPLETE = __webpack_require__(/*! ./modules/complete */ \"./src/js/modules/complete.js\");\r\nconst FILTER = __webpack_require__(/*! ./modules/filter */ \"./src/js/modules/filter.js\");\r\nconst ShowDeleteds = __webpack_require__(/*! ./modules/showDeleteds */ \"./src/js/modules/showDeleteds.js\");\r\nconst STATE = __webpack_require__(/*! ./modules/state */ \"./src/js/modules/state.js\");\r\n\r\nasync function engine () {\r\n\tconst url = \"http://localhost:8888/todos\";\r\n\r\n\tconst {form, screenInput, showDeletedsBtn} = UI;\r\n\tUI.start();\r\n\r\n\tawait POST(form, screenInput, url);\r\n\tawait GET(UI, url);\r\n\tawait STATE(PATCH, DELETE, COMPLETE, url);\r\n\tawait FILTER(\r\n\t\tdocument.querySelectorAll(\"[data-filter]\"),\r\n\t\turl,\r\n\t\tUI,\r\n\t\tPATCH,\r\n\t\tDELETE,\r\n\t\tCOMPLETE\r\n\t);\r\n\tawait ShowDeleteds(\r\n\t\tshowDeletedsBtn,\r\n\t\tUI\r\n\t);\r\n}\r\n\r\nengine();\n\n//# sourceURL=webpack://crud/./src/js/index.js?");
 
 /***/ }),
 
@@ -44,9 +44,9 @@ eval("module.exports = async function (removeBtn, url) {\r\n\tremoveBtn.forEach(
 /*!**********************************!*\
   !*** ./src/js/modules/filter.js ***!
   \**********************************/
-/***/ ((module) => {
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
-eval("module.exports = function (btnArray, url, UI) {\r\n\tbtnArray.forEach(btn => {\r\n\t\tbtn.addEventListener(\"click\", async () => {\r\n\t\t\tlet filterUrl;\r\n\t\t\tUI.listsBlock.innerHTML = \"\";\r\n\r\n\t\t\tif (btn.dataset.filter === \"filterComplete\") {\r\n\t\t\t\tfilterUrl = `${url}?isComplete=true`;\r\n\t\t\t} else if (btn.dataset.filter === \"filterUnComplete\") {\r\n\t\t\t\tfilterUrl = `${url}?isComplete=false`;\r\n\t\t\t} else if (btn.dataset.filter === \"filterAll\") {\r\n\t\t\t\tfilterUrl = url;\r\n\t\t\t}\r\n\r\n\t\t\tawait fetch (filterUrl)\r\n\t\t\t.then(data => data.json())\r\n\t\t\t.then(data => data.forEach(obj => UI.toHTML(obj.id, obj.title, obj.isComplete)));\r\n\t\t});\r\n\t});\r\n}\n\n//# sourceURL=webpack://crud/./src/js/modules/filter.js?");
+eval("const STATE = __webpack_require__(/*! ./state */ \"./src/js/modules/state.js\");\r\n\r\nmodule.exports = async function (btnArray, url, UI, PATCH, DELETE, COMPLETE) {\r\n\tbtnArray.forEach(btn => {\r\n\t\tbtn.addEventListener(\"click\", async () => {\r\n\t\t\tlet filterUrl;\r\n\t\t\tUI.listsBlock.innerHTML = \"\";\r\n\r\n\t\t\tif (btn.dataset.filter === \"filterComplete\") {\r\n\t\t\t\tfilterUrl = `${url}?isComplete=true`;\r\n\t\t\t} else if (btn.dataset.filter === \"filterUnComplete\") {\r\n\t\t\t\tfilterUrl = `${url}?isComplete=false`;\r\n\t\t\t} else if (btn.dataset.filter === \"filterAll\") {\r\n\t\t\t\tfilterUrl = url;\r\n\t\t\t}\r\n\r\n\t\t\tawait fetch (filterUrl)\r\n\t\t\t.then(data => data.json())\r\n\t\t\t.then(data => data.forEach(obj => UI.toHTML(obj.id, obj.title, obj.isComplete)))\r\n\t\t\t.then(() => STATE(PATCH, DELETE, COMPLETE, url));\r\n\t\t});\r\n\t});\r\n};\n\n//# sourceURL=webpack://crud/./src/js/modules/filter.js?");
 
 /***/ }),
 
@@ -66,7 +66,7 @@ eval("module.exports = async function (ui, url) {\r\n\treturn await fetch(url)\r
   \***************************************/
 /***/ ((module) => {
 
-eval("module.exports = function (editBtnArray, saveBtnArray, content, url) {\r\n\teditBtnArray.forEach((editBtn, index) => {\r\n\t\teditBtn.addEventListener(\"click\", () => {\r\n\t\t\teditBtn.style.display = \"none\";\r\n\t\t\tsaveBtnArray[index].style.display = \"inline-block\";\r\n\t\t\tconst fakeID = parseInt(content[index].children[0].textContent);\r\n\t\t\tconst input = content[index].children[1];\r\n\t\t\tinput.classList.add(\"edit\");\r\n\t\t\tinput.removeAttribute(\"readonly\");\r\n\r\n\t\t\tsaveBtnArray[index].addEventListener(\"click\", async () => {\r\n\t\t\t\tawait fetch(`${url}/${fakeID}`, {\r\n\t\t\t\t\tmethod: \"PATCH\",\r\n\t\t\t\t\theaders: {\r\n\t\t\t\t\t\t\"content-type\" : \"application/json\"\r\n\t\t\t\t\t},\r\n\t\t\t\t\tbody: JSON.stringify({title: input.value.trim()})\r\n\t\t\t\t})\r\n\t\t\t});\r\n\t\t});\r\n\t});\r\n};\n\n//# sourceURL=webpack://crud/./src/js/modules/patchMethod.js?");
+eval("module.exports = function (editBtnArray, saveBtnArray, content, url) {\r\n\teditBtnArray.forEach((editBtn, index) => {\r\n\t\teditBtn.addEventListener(\"click\", () => {\r\n\t\t\teditBtn.style.display = \"none\";\r\n\t\t\tsaveBtnArray[index].style.display = \"inline-block\";\r\n\t\t\tconst fakeID = parseInt(content[index].children[0].textContent);\r\n\t\t\tconst input = content[index].children[1];\r\n\t\t\tinput.classList.add(\"edit\");\r\n\t\t\tinput.removeAttribute(\"readonly\");\r\n\r\n\t\t\tsaveBtnArray[index].addEventListener(\"click\", async () => {\r\n\t\t\t\tawait fetch(`${url}/${fakeID}`, {\r\n\t\t\t\t\tmethod: \"PATCH\",\r\n\t\t\t\t\theaders: {\r\n\t\t\t\t\t\t\"content-type\" : \"application/json\"\r\n\t\t\t\t\t},\r\n\t\t\t\t\tbody: JSON.stringify({title: input.value.trim()})\r\n\t\t\t\t});\r\n\t\t\t});\r\n\t\t});\r\n\t});\r\n};\n\n//# sourceURL=webpack://crud/./src/js/modules/patchMethod.js?");
 
 /***/ }),
 
@@ -87,6 +87,16 @@ eval("module.exports = async function (form, input, url) {\r\n\tform.addEventLis
 /***/ ((module) => {
 
 eval("module.exports = async  function (showBtn, UI) {\r\n    showBtn.addEventListener(\"click\", async () => {\r\n        UI.deletedItemsBlockContent.innerHTML = \"\";\r\n\r\n        await fetch(\"http://localhost:8888/history\")\r\n        .then(data => data.json())\r\n        .then(data => data.forEach(obj => {            \r\n            UI.showDeleteds(obj.id, obj.title);\r\n        }))\r\n    });    \r\n}\n\n//# sourceURL=webpack://crud/./src/js/modules/showDeleteds.js?");
+
+/***/ }),
+
+/***/ "./src/js/modules/state.js":
+/*!*********************************!*\
+  !*** ./src/js/modules/state.js ***!
+  \*********************************/
+/***/ ((module) => {
+
+eval("module.exports = async function (PATCH, DELETE, COMPLETE, url) {\r\n\tPATCH(\r\n\t\tdocument.querySelectorAll(\".editBtn\"),\r\n\t\tdocument.querySelectorAll(\".saveBtn\"),\r\n\t\tdocument.querySelectorAll(\".listsBlockItemContent\"),\r\n\t\turl\r\n\t);\r\n\tDELETE(\r\n\t\tdocument.querySelectorAll(\".removeBtn\"),\r\n\t\turl\r\n\t);\r\n\tCOMPLETE(\r\n\t\t\turl,\r\n\t\t\tdocument.querySelectorAll(\".buttons input\"),\r\n\t\t\tdocument.querySelectorAll(\".listsBlockItemContent\")\r\n\t);\r\n};\n\n//# sourceURL=webpack://crud/./src/js/modules/state.js?");
 
 /***/ }),
 

@@ -1,4 +1,6 @@
-module.exports = function (btnArray, url, UI) {
+const STATE = require("./state");
+
+module.exports = async function (btnArray, url, UI, PATCH, DELETE, COMPLETE) {
 	btnArray.forEach(btn => {
 		btn.addEventListener("click", async () => {
 			let filterUrl;
@@ -14,7 +16,8 @@ module.exports = function (btnArray, url, UI) {
 
 			await fetch (filterUrl)
 			.then(data => data.json())
-			.then(data => data.forEach(obj => UI.toHTML(obj.id, obj.title, obj.isComplete)));
+			.then(data => data.forEach(obj => UI.toHTML(obj.id, obj.title, obj.isComplete)))
+			.then(() => STATE(PATCH, DELETE, COMPLETE, url));
 		});
 	});
-}
+};
